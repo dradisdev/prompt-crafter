@@ -1195,6 +1195,9 @@ Example structure:
                 const text = element.value.toLowerCase();
                 const feedbackContainer = document.getElementById(feedbackId);
                 
+                console.log('checkAffirmativeLanguage called with:', feedbackId);
+                console.log('feedbackContainer found:', feedbackContainer);
+                
                 if (!feedbackContainer) {
                     console.error('Feedback container not found:', feedbackId);
                     return;
@@ -1216,6 +1219,7 @@ Example structure:
                     if (item.pattern.test(text)) {
                         const match = text.match(item.pattern);
                         if (match) {
+                            console.log('Pattern matched:', match[0]);
                             suggestions.push({
                                 original: match[0],
                                 suggestion: item.suggestion,
@@ -1225,6 +1229,7 @@ Example structure:
                     }
                 });
                 
+                console.log('Suggestions found:', suggestions.length);
                 displayFeedback(feedbackContainer, suggestions, element);
             } catch (error) {
                 console.error('Error in checkAffirmativeLanguage:', error);
@@ -1261,6 +1266,30 @@ Example structure:
         
         // Display feedback with suggestions
         function displayFeedback(container, suggestions, element) {
+            if (!container) {
+                console.error('displayFeedback: container is null');
+                return;
+            }
+            
+            try {
+                container.innerHTML = '';
+                
+                suggestions.forEach(function(item) {
+                    const feedbackItem = document.createElement('div');
+                    feedbackItem.className = 'feedback-item suggestion';
+                    
+                    const feedbackText = document.createElement('span');
+                    feedbackText.className = 'feedback-text';
+                    feedbackText.textContent = 'Consider: "' + item.suggestion + '" instead of "' + item.original + '"';
+                    
+                    const applyBtn = document.createElement('button');
+                    applyBtn.className = 'apply-suggestion';
+                    applyBtn.textContent = 'Apply';
+                    applyBtn.type = 'button';
+                    applyBtn.onclick = function() {
+                        const currentText = element.value;
+                        const regex = new RegExp(item.original.replace(/[.*+?^${}()|[\]\\]/g, '\\        // Display feedback with suggestions
+        function displayFeedback(container, suggestions, element) {
             container.innerHTML = '';
             
             suggestions.forEach(item => {
@@ -1287,6 +1316,20 @@ Example structure:
                 feedbackItem.appendChild(applyBtn);
                 container.appendChild(feedbackItem);
             });
+        }'), 'gi');
+                        const newText = currentText.replace(regex, item.suggestion);
+                        element.value = newText;
+                        checkAffirmativeLanguage(element, 'queryFeedback');
+                        updateTokenCount(element, 'queryTokenCount');
+                    };
+                    
+                    feedbackItem.appendChild(feedbackText);
+                    feedbackItem.appendChild(applyBtn);
+                    container.appendChild(feedbackItem);
+                });
+            } catch (error) {
+                console.error('Error in displayFeedback:', error);
+            }
         }
         
         function signInWithGoogle() {
