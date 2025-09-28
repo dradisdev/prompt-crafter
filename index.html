@@ -9,46 +9,47 @@ All rights reserved.
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Modal AI Prompt Crafter</title>
-<!-- Firebase v9 SDK -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-  
-  // Your Firebase config (replace with your actual config from Step 2.6)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCj2D_emLzgMbVEOBcnAEfSBZdw9ljQ3YE",
-    authDomain: "quill-beta1.firebaseapp.com",
-    projectId: "quill-beta1",
-    storageBucket: "quill-beta1.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:242836015487:web:c5cdd8ac6148e89924b24a"
-  };
-  
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const provider = new GoogleAuthProvider();
-  
-  // Make available globally for use in your existing JavaScript
-  window.firebaseAuth = auth;
-  window.firebaseDb = db;
-  window.firebaseProvider = provider;
-  window.firebaseAuthFunctions = {
-    signInWithPopup,
-    signOut,
-    onAuthStateChanged
-  };
-  window.firestoreFunctions = {
-    doc,
-    setDoc,
-    getDoc,
-    collection,
-    getDocs,
-    deleteDoc
-  };
-</script>      
+    
+    <!-- Firebase v9 SDK -->
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+      import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+      
+      // Your Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyCj2D_emLzgMbVEOBcnAEfSBZdw9ljQ3YE",
+        authDomain: "quill-beta1.firebaseapp.com",
+        projectId: "quill-beta1",
+        storageBucket: "quill-beta1.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "1:242836015487:web:c5cdd8ac6148e89924b24a"
+      };
+      
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const provider = new GoogleAuthProvider();
+      
+      // Make available globally for use in your existing JavaScript
+      window.firebaseAuth = auth;
+      window.firebaseDb = db;
+      window.firebaseProvider = provider;
+      window.firebaseAuthFunctions = {
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged
+      };
+      window.firestoreFunctions = {
+        doc,
+        setDoc,
+        getDoc,
+        collection,
+        getDocs,
+        deleteDoc
+      };
+    </script>
     <style>
         * {
             margin: 0;
@@ -79,18 +80,88 @@ All rights reserved.
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
             padding: 30px;
-            text-align: center;
         }
         
-        .header h1 {
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header-main h1 {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 10px;
         }
         
-        .header p {
+        .header-main p {
             opacity: 0.9;
             font-size: 1.1rem;
+        }
+        
+        .auth-section {
+            display: flex;
+            align-items: center;
+        }
+        
+        .auth-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sign-in-btn {
+            background: white;
+            color: #4f46e5;
+        }
+        
+        .sign-in-btn:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+        
+        .sign-out-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+        
+        .sign-out-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        
+        .user-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0.9;
         }
         
         .form-container {
@@ -432,20 +503,6 @@ All rights reserved.
             margin-bottom: 20px;
             font-weight: 500;
         }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .header p {
-                font-size: 1rem;
-            }
-            
-            .template-grid {
-                grid-template-columns: 1fr;
-            }
-        }
         
         .footer {
             background: #f8fafc;
@@ -502,8 +559,20 @@ All rights reserved.
             color: #9ca3af;
             font-style: italic;
         }
-        
+
         @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+            
             .footer-content {
                 flex-direction: column;
                 text-align: center;
@@ -515,8 +584,24 @@ All rights reserved.
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎯 Multi-Modal AI Prompt Crafter</h1>
-            <p>Build focused, effective prompts for better AI assistance</p>
+            <div class="header-content">
+                <div class="header-main">
+                    <h1>🎯 Multi-Modal AI Prompt Crafter</h1>
+                    <p>Build focused, effective prompts for better AI assistance</p>
+                </div>
+                <div class="auth-section" id="authSection">
+                    <button id="signInBtn" class="auth-btn sign-in-btn" onclick="signInWithGoogle()">
+                        Sign in with Google
+                    </button>
+                    <div id="userProfile" class="user-profile" style="display: none;">
+                        <img id="userAvatar" class="user-avatar" src="" alt="User">
+                        <div class="user-info">
+                            <div id="userName" class="user-name"></div>
+                            <button id="signOutBtn" class="auth-btn sign-out-btn" onclick="signOutUser()">Sign Out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="form-container">
@@ -602,10 +687,10 @@ All rights reserved.
                 <div class="form-group" id="modelWorkflowGroup" style="display: none;">
                     <label for="modelWorkflow">Model Workflow</label>
                     <textarea id="modelWorkflow" name="modelWorkflow" placeholder="Describe the multi-model workflow needed:
-• Claude: Research and planning
-• DALL-E/Midjourney: Image generation  
-• RunwayML: Video creation
-• Custom models: Specialized tasks"></textarea>
+- Claude: Research and planning
+- DALL-E/Midjourney: Image generation  
+- RunwayML: Video creation
+- Custom models: Specialized tasks"></textarea>
                     <div class="help-text">Describe which models should be used and how they work together</div>
                 </div>
 
@@ -641,10 +726,10 @@ All rights reserved.
                     <textarea id="context" name="context" placeholder="Provide relevant background information, your situation, constraints, etc.
 
 Example structure:
-• Current situation: [describe your setup/problem]
-• What you've tried: [previous solutions/approaches]
-• Constraints: [budget, timeline, technical limitations]
-• Goals: [what success looks like]"></textarea>
+- Current situation: [describe your setup/problem]
+- What you've tried: [previous solutions/approaches]
+- Constraints: [budget, timeline, technical limitations]
+- Goals: [what success looks like]"></textarea>
                     <div class="help-text">What does Claude need to know about your situation?</div>
                 </div>
                 
@@ -766,6 +851,118 @@ Example structure:
         Copyright © 2025 Dradis Holdings LLC
         All rights reserved.
         */
+        
+        // Firebase Authentication Functions
+        let currentUser = null;
+        
+        function signInWithGoogle() {
+            const { signInWithPopup } = window.firebaseAuthFunctions;
+            
+            signInWithPopup(window.firebaseAuth, window.firebaseProvider)
+                .then((result) => {
+                    currentUser = result.user;
+                    updateAuthUI();
+                    syncUserData();
+                    console.log('User signed in:', currentUser.displayName);
+                })
+                .catch((error) => {
+                    console.error('Sign-in error:', error);
+                    alert('Sign-in failed. Please try again.');
+                });
+        }
+        
+        function signOutUser() {
+            const { signOut } = window.firebaseAuthFunctions;
+            
+            signOut(window.firebaseAuth)
+                .then(() => {
+                    currentUser = null;
+                    updateAuthUI();
+                    console.log('User signed out');
+                })
+                .catch((error) => {
+                    console.error('Sign-out error:', error);
+                });
+        }
+        
+        function updateAuthUI() {
+            const signInBtn = document.getElementById('signInBtn');
+            const userProfile = document.getElementById('userProfile');
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            
+            if (currentUser) {
+                signInBtn.style.display = 'none';
+                userProfile.style.display = 'flex';
+                userAvatar.src = currentUser.photoURL || '';
+                userName.textContent = currentUser.displayName || currentUser.email;
+            } else {
+                signInBtn.style.display = 'block';
+                userProfile.style.display = 'none';
+            }
+        }
+        
+        function syncUserData() {
+            if (!currentUser) return;
+            
+            // Load user's saved prompts from Firestore
+            loadUserPrompts();
+        }
+        
+        async function loadUserPrompts() {
+            if (!currentUser) return;
+            
+            try {
+                const { collection, getDocs } = window.firestoreFunctions;
+                const userPromptsRef = collection(window.firebaseDb, 'users', currentUser.uid, 'savedPrompts');
+                const querySnapshot = await getDocs(userPromptsRef);
+                
+                const cloudPrompts = [];
+                querySnapshot.forEach((doc) => {
+                    cloudPrompts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Merge with local prompts and update display
+                mergePrompts(cloudPrompts);
+                
+            } catch (error) {
+                console.error('Error loading user prompts:', error);
+            }
+        }
+        
+        function mergePrompts(cloudPrompts) {
+            const localPrompts = getSavedPrompts();
+            
+            // Simple merge strategy: cloud prompts take precedence
+            const mergedPrompts = [...cloudPrompts];
+            
+            // Add local prompts that don't exist in cloud
+            localPrompts.forEach(localPrompt => {
+                if (!cloudPrompts.find(cloudPrompt => cloudPrompt.id === localPrompt.id)) {
+                    mergedPrompts.push(localPrompt);
+                }
+            });
+            
+            // Update local storage and display
+            localStorage.setItem('promptCrafterSaved', JSON.stringify(mergedPrompts));
+            displaySavedPrompts();
+        }
+        
+        // Listen for auth state changes
+        window.addEventListener('DOMContentLoaded', function() {
+            const { onAuthStateChanged } = window.firebaseAuthFunctions;
+            
+            onAuthStateChanged(window.firebaseAuth, (user) => {
+                currentUser = user;
+                updateAuthUI();
+                if (user) {
+                    syncUserData();
+                }
+            });
+            
+            displaySavedPrompts();
+            loadSharedPrompt();
+        });
         
         const templates = {
             'product-research': {
@@ -1139,9 +1336,15 @@ Example structure:
                 lastUsed: new Date().toISOString()
             };
             
+            // Save to local storage
             const savedPrompts = getSavedPrompts();
             savedPrompts.push(savedPrompt);
             localStorage.setItem('promptCrafterSaved', JSON.stringify(savedPrompts));
+            
+            // Save to Firestore if user is authenticated
+            if (currentUser) {
+                savePromptToFirestore(savedPrompt);
+            }
             
             const analytics = getAnalytics();
             analytics.totalSaves = (analytics.totalSaves || 0) + 1;
@@ -1149,6 +1352,19 @@ Example structure:
             
             displaySavedPrompts();
             alert('Prompt saved successfully!');
+        }
+        
+        async function savePromptToFirestore(promptData) {
+            if (!currentUser) return;
+            
+            try {
+                const { doc, setDoc } = window.firestoreFunctions;
+                const promptRef = doc(window.firebaseDb, 'users', currentUser.uid, 'savedPrompts', promptData.id);
+                await setDoc(promptRef, promptData);
+                console.log('Prompt saved to Firestore');
+            } catch (error) {
+                console.error('Error saving to Firestore:', error);
+            }
         }
         
         function getSavedPrompts() {
@@ -1358,11 +1574,11 @@ How It Works:
 5. Save and share your prompt templates for team collaboration
 
 Current Features:
-• 12+ specialized prompt templates
-• Multi-model workflow planning capabilities
-• Save/share functionality for team collaboration
-• Enhanced research and citation guidance
-• Mobile-responsive design for cross-device access
+- 12+ specialized prompt templates
+- Multi-model workflow planning capabilities
+- Save/share functionality for team collaboration
+- Enhanced research and citation guidance
+- Mobile-responsive design for cross-device access
 
 Beta Notice:
 This is a beta version focused on prompt generation and optimization. Users generate prompts within the application, then copy and use them in their preferred AI platform.
@@ -1374,5 +1590,4 @@ Upcoming releases will incorporate direct AI workflow automation, allowing users
         }
     </script>
 </body>
-
 </html>
