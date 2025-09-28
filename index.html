@@ -9,6 +9,46 @@ All rights reserved.
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Modal AI Prompt Crafter</title>
+<!-- Firebase v9 SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+  
+  // Your Firebase config (replace with your actual config from Step 2.6)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCj2D_emLzgMbVEOBcnAEfSBZdw9ljQ3YE",
+    authDomain: "quill-beta1.firebaseapp.com",
+    projectId: "quill-beta1",
+    storageBucket: "quill-beta1.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:242836015487:web:c5cdd8ac6148e89924b24a"
+  };
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+  
+  // Make available globally for use in your existing JavaScript
+  window.firebaseAuth = auth;
+  window.firebaseDb = db;
+  window.firebaseProvider = provider;
+  window.firebaseAuthFunctions = {
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
+  };
+  window.firestoreFunctions = {
+    doc,
+    setDoc,
+    getDoc,
+    collection,
+    getDocs,
+    deleteDoc
+  };
+</script>      
     <style>
         * {
             margin: 0;
@@ -1334,4 +1374,5 @@ Upcoming releases will incorporate direct AI workflow automation, allowing users
         }
     </script>
 </body>
+
 </html>
