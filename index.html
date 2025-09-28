@@ -1191,40 +1191,44 @@ Example structure:
         
         // Affirmative Language Detection
         function checkAffirmativeLanguage(element, feedbackId) {
-            const text = element.value.toLowerCase();
-            const feedbackContainer = document.getElementById(feedbackId);
-            
-            if (!feedbackContainer) {
-                console.error('Feedback container not found:', feedbackId);
-                return;
-            }
-            
-            const negativePatterns = [
-                { pattern: /\b(don't|do not)\s+be\s+verbose\b/gi, suggestion: "be concise and direct" },
-                { pattern: /\b(avoid|don't use)\s+jargon\b/gi, suggestion: "use clear, simple terminology" },
-                { pattern: /\b(don't|avoid)\s+complic/gi, suggestion: "keep it simple" },
-                { pattern: /\b(never|don't)\s+assum/gi, suggestion: "consider all perspectives" },
-                { pattern: /\b(avoid|don't)\s+being\s+bias/gi, suggestion: "maintain objectivity" },
-                { pattern: /\b(don't|avoid)\s+mak/gi, suggestion: "ensure accuracy" },
-                { pattern: /\bcan't\b/gi, suggestion: "unable to" },
-                { pattern: /\bwon't\b/gi, suggestion: "will not" }
-            ];
-            
-            let suggestions = [];
-            negativePatterns.forEach(item => {
-                if (item.pattern.test(text)) {
-                    const match = text.match(item.pattern);
-                    if (match) {
-                        suggestions.push({
-                            original: match[0],
-                            suggestion: item.suggestion,
-                            type: 'affirmative'
-                        });
-                    }
+            try {
+                const text = element.value.toLowerCase();
+                const feedbackContainer = document.getElementById(feedbackId);
+                
+                if (!feedbackContainer) {
+                    console.error('Feedback container not found:', feedbackId);
+                    return;
                 }
-            });
-            
-            displayFeedback(feedbackContainer, suggestions, element);
+                
+                const negativePatterns = [
+                    { pattern: /\b(don't|do not)\s+be\s+verbose\b/gi, suggestion: "be concise and direct" },
+                    { pattern: /\b(avoid|don't use)\s+jargon\b/gi, suggestion: "use clear, simple terminology" },
+                    { pattern: /\b(don't|avoid)\s+complic/gi, suggestion: "keep it simple" },
+                    { pattern: /\b(never|don't)\s+assum/gi, suggestion: "consider all perspectives" },
+                    { pattern: /\b(avoid|don't)\s+being\s+bias/gi, suggestion: "maintain objectivity" },
+                    { pattern: /\b(don't|avoid)\s+mak/gi, suggestion: "ensure accuracy" },
+                    { pattern: /\bcan't\b/gi, suggestion: "unable to" },
+                    { pattern: /\bwon't\b/gi, suggestion: "will not" }
+                ];
+                
+                let suggestions = [];
+                negativePatterns.forEach(function(item) {
+                    if (item.pattern.test(text)) {
+                        const match = text.match(item.pattern);
+                        if (match) {
+                            suggestions.push({
+                                original: match[0],
+                                suggestion: item.suggestion,
+                                type: 'affirmative'
+                            });
+                        }
+                    }
+                });
+                
+                displayFeedback(feedbackContainer, suggestions, element);
+            } catch (error) {
+                console.error('Error in checkAffirmativeLanguage:', error);
+            }
         }
         
         // Token Counter with Efficiency Warnings
