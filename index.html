@@ -318,6 +318,82 @@ All rights reserved.
             font-style: italic;
         }
         
+        .form-feedback {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 8px;
+            gap: 15px;
+        }
+        
+        .feedback-container {
+            flex-grow: 1;
+        }
+        
+        .feedback-item {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .feedback-item.suggestion {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .feedback-item.warning {
+            background: #fee2e2;
+            border-color: #ef4444;
+        }
+        
+        .feedback-text {
+            flex-grow: 1;
+        }
+        
+        .apply-suggestion {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        .apply-suggestion:hover {
+            background: #2563eb;
+        }
+        
+        .token-counter {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            color: #374151;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .token-counter.warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #92400e;
+        }
+        
+        .token-counter.error {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #dc2626;
+        }
+        
         .button-group {
             display: flex;
             gap: 15px;
@@ -852,7 +928,7 @@ All rights reserved.
                 </div>
 
                 <div class="form-group">
-                    <label for="role">Primary Role/Mode <span class="required">*</span></label>
+                    <label for="role">Primary Role Assignment <span class="required">*</span></label>
                     <select id="role" name="role" required>
                         <option value="">Select a role...</option>
                         <option value="research assistant">Research Assistant</option>
@@ -864,12 +940,32 @@ All rights reserved.
                         <option value="tutor">Educational Tutor</option>
                         <option value="custom">Custom Role</option>
                     </select>
-                    <div class="help-text">What primary function do you need Claude to perform?</div>
+                    <div class="help-text">What specific role should the AI assume for this task?</div>
                 </div>
 
                 <div class="form-group" id="customRoleGroup" style="display: none;">
                     <label for="customRole">Custom Role Description</label>
                     <input type="text" id="customRole" name="customRole" placeholder="e.g., UX Design Critic, Financial Planner, Project Manager, etc.">
+                </div>
+
+                <div class="form-group">
+                    <label for="audience">Target Audience</label>
+                    <select id="audience" name="audience">
+                        <option value="">Select audience...</option>
+                        <option value="expert">Expert in the field</option>
+                        <option value="professional">Working professional</option>
+                        <option value="student">Student/learner</option>
+                        <option value="general">General audience</option>
+                        <option value="executive">Executive/decision-maker</option>
+                        <option value="technical">Technical specialist</option>
+                        <option value="custom">Custom audience</option>
+                    </select>
+                    <div class="help-text">Who will be reading or using the AI's response?</div>
+                </div>
+
+                <div class="form-group" id="customAudienceGroup" style="display: none;">
+                    <label for="customAudience">Custom Audience Description</label>
+                    <input type="text" id="customAudience" name="customAudience" placeholder="Describe the specific audience...">
                 </div>
 
                 <div class="form-group">
@@ -1184,7 +1280,93 @@ Example structure:
             displaySavedPrompts();
         }
         
-        // Listen for auth state changes
+        // Prompt Optimization Functions (Research-Based)
+        
+        // Affirmative Language Detection
+        function checkAffirmativeLanguage(element, feedbackId) {
+            const text = element.value.toLowerCase();
+            const feedbackContainer = document.getElementById(feedbackId);
+            
+            const negativePatterns = [
+                { pattern: /\b(don't|do not)\s+be\s+verbose\b/gi, suggestion: "be concise and direct" },
+                { pattern: /\b(avoid|don't use)\s+jargon\b/gi, suggestion: "use clear, simple terminology" },
+                { pattern: /\b(don't|avoid)\s+complic/gi, suggestion: "keep it simple" },
+                { pattern: /\b(never|don't)\s+assum/gi, suggestion: "consider all perspectives" },
+                { pattern: /\b(avoid|don't)\s+being\s+bias/gi, suggestion: "maintain objectivity" },
+                { pattern: /\b(don't|avoid)\s+mak/gi, suggestion: "ensure accuracy" },
+                { pattern: /\bcan't\b/gi, suggestion: "unable to" },
+                { pattern: /\bwon't\b/gi, suggestion: "will not" }
+            ];
+            
+            let suggestions = [];
+            negativePatterns.forEach(item => {
+                if (item.pattern.test(text)) {
+                    const match = text.match(item.pattern);
+                    if (match) {
+                        suggestions.push({
+                            original: match[0],
+                            suggestion: item.suggestion,
+                            type: 'affirmative'
+                        });
+                    }
+                }
+            });
+            
+            displayFeedback(feedbackContainer, suggestions, element);
+        }
+        
+        // Token Counter with Efficiency Warnings
+        function updateTokenCount(element, counterId) {
+            const text = element.value;
+            const tokenCount = estimateTokens(text);
+            const counter = document.getElementById(counterId);
+            
+            counter.textContent = `Tokens: ${tokenCount}`;
+            counter.className = 'token-counter';
+            
+            if (tokenCount > 500) {
+                counter.className += ' error';
+                counter.textContent += ' (Too long - consider shortening)';
+            } else if (tokenCount > 300) {
+                counter.className += ' warning';
+                counter.textContent += ' (Getting long)';
+            }
+        }
+        
+        // Simple token estimation (roughly 4 characters per token)
+        function estimateTokens(text) {
+            return Math.ceil(text.length / 4);
+        }
+        
+        // Display feedback with suggestions
+        function displayFeedback(container, suggestions, element) {
+            container.innerHTML = '';
+            
+            suggestions.forEach(item => {
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = 'feedback-item suggestion';
+                
+                const feedbackText = document.createElement('span');
+                feedbackText.className = 'feedback-text';
+                feedbackText.textContent = `Consider: "${item.suggestion}" instead of "${item.original}"`;
+                
+                const applyBtn = document.createElement('button');
+                applyBtn.className = 'apply-suggestion';
+                applyBtn.textContent = 'Apply';
+                applyBtn.type = 'button';
+                applyBtn.onclick = () => {
+                    const currentText = element.value;
+                    const newText = currentText.replace(new RegExp(item.original, 'gi'), item.suggestion);
+                    element.value = newText;
+                    checkAffirmativeLanguage(element, container.id);
+                    updateTokenCount(element, element.id + 'TokenCount');
+                };
+                
+                feedbackItem.appendChild(feedbackText);
+                feedbackItem.appendChild(applyBtn);
+                container.appendChild(feedbackItem);
+            });
+        }
         window.addEventListener('DOMContentLoaded', function() {
             const { onAuthStateChanged } = window.firebaseAuthFunctions;
             
@@ -1491,9 +1673,14 @@ Example structure:
             customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
         });
 
-        document.getElementById('verification').addEventListener('change', function() {
-            const customGroup = document.getElementById('customVerificationGroup');
+        document.getElementById('audience').addEventListener('change', function() {
+            const customGroup = document.getElementById('customAudienceGroup');
             customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+        
+        document.getElementById('mainQuery').addEventListener('input', function() {
+            checkAffirmativeLanguage(this, 'queryFeedback');
+            updateTokenCount(this, 'queryTokenCount');
         });
 
         function generatePrompt() {
@@ -1517,6 +1704,7 @@ Example structure:
             }
             
             const context = formData.get('context');
+            const audience = formData.get('audience') === 'custom' ? formData.get('customAudience') : getAudienceText(formData.get('audience'));
             const stakes = formData.get('stakes') === 'custom' ? formData.get('customStakes') : getStakesText(formData.get('stakes'));
             const outputType = formData.get('outputType') === 'custom' ? formData.get('customOutput') : getOutputText(formData.get('outputType'));
             const researchNeeds = formData.get('researchNeeds') === 'custom' ? formData.get('customResearch') : getResearchText(formData.get('researchNeeds'));
@@ -1527,57 +1715,67 @@ Example structure:
             let prompt = '';
             
             if (aiModel === 'multimodel') {
-                prompt += 'MULTI-MODEL AI WORKFLOW REQUEST\n\n';
-                prompt += 'PRIMARY COORDINATOR: I need you to act as a ' + role + ' and coordinate this multi-model workflow.\n\n';
-                prompt += 'REQUEST: ' + mainQuery + '\n\n';
+                prompt += '###MULTI-MODEL AI WORKFLOW REQUEST###\n\n';
+                prompt += '###PRIMARY COORDINATOR###\nI need you to act as a ' + role + ' and coordinate this multi-model workflow.\n\n';
+                prompt += '###TASK###\n' + mainQuery + '\n\n';
                 
                 if (context) {
-                    prompt += 'CONTEXT:\n' + context + '\n\n';
+                    prompt += '###CONTEXT###\n' + context + '\n\n';
                 }
                 
                 if (modelWorkflow) {
-                    prompt += 'WORKFLOW ARCHITECTURE:\n' + modelWorkflow + '\n\n';
+                    prompt += '###WORKFLOW ARCHITECTURE###\n' + modelWorkflow + '\n\n';
                 }
                 
-                prompt += 'YOUR ROLE: Plan and coordinate the workflow, provide detailed prompts for each specialized model, and integrate the results into a cohesive final output.\n\n';
+                prompt += '###YOUR ROLE###\nPlan and coordinate the workflow, provide detailed prompts for each specialized model, and integrate the results into a cohesive final output.\n\n';
             } else {
+                prompt += '###ROLE ASSIGNMENT###\n';
                 prompt += 'I need you to act as a ' + role + ' for this request.\n\n';
-                prompt += 'REQUEST: ' + mainQuery + '\n\n';
+                
+                prompt += '###TASK###\n' + mainQuery + '\n\n';
                 
                 if (context) {
-                    prompt += 'CONTEXT:\n' + context + '\n\n';
+                    prompt += '###CONTEXT###\n' + context + '\n\n';
                 }
             }
             
-            const specifications = [];
+            // Add audience specification if provided
+            if (audience) {
+                prompt += '###AUDIENCE###\n';
+                prompt += 'The audience is ' + audience + '. Tailor your response appropriately.\n\n';
+            }
+            
+            const requirements = [];
             
             if (stakes) {
-                specifications.push('• IMPORTANCE: ' + stakes);
+                requirements.push('• IMPORTANCE: ' + stakes);
             }
             
             if (outputType) {
-                specifications.push('• DESIRED OUTPUT: ' + outputType);
+                requirements.push('• DESIRED OUTPUT: ' + outputType);
             }
             
             if (researchNeeds) {
-                specifications.push('• RESEARCH APPROACH: ' + researchNeeds);
+                requirements.push('• RESEARCH APPROACH: ' + researchNeeds);
             }
             
             if (verification) {
-                specifications.push('• ACCURACY & SOURCES: ' + verification);
+                requirements.push('• ACCURACY & SOURCES: ' + verification);
             }
             
-            if (specifications.length > 0) {
-                prompt += 'SPECIFICATIONS:\n' + specifications.join('\n') + '\n\n';
+            if (requirements.length > 0) {
+                prompt += '###REQUIREMENTS###\n' + requirements.join('\n') + '\n\n';
             }
             
-            prompt += 'Please ask me any necessary follow-up questions to focus your research and ensure you provide the most useful results for my specific situation.';
+            prompt += '###SUCCESS CRITERIA###\n';
+            prompt += 'Please ask any necessary follow-up questions to focus your research and ensure you provide the most useful results for the specific situation described above.';
             
             document.getElementById('promptOutput').textContent = prompt;
             document.getElementById('outputSection').style.display = 'block';
             
             trackPromptGeneration({
                 role: role,
+                audience: formData.get('audience'),
                 hasContext: !!context,
                 stakes: formData.get('stakes'),
                 outputType: formData.get('outputType'),
@@ -1586,10 +1784,23 @@ Example structure:
                 aiModel: aiModel,
                 isMultiModel: aiModel === 'multimodel',
                 promptLength: prompt.length,
+                delimitersUsed: true,
                 timestamp: new Date().toISOString()
             });
             
             document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function getAudienceText(audience) {
+            const audienceMap = {
+                'expert': 'an expert in the field',
+                'professional': 'working professionals',
+                'student': 'students and learners',
+                'general': 'a general audience',
+                'executive': 'executives and decision-makers',
+                'technical': 'technical specialists'
+            };
+            return audienceMap[audience] || '';
         }
         
         function getStakesText(stakes) {
