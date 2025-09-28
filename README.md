@@ -1,2 +1,2 @@
-# prompt-crafter
-Multi-Modal AI Prompt Crafter 1.0
+# Quill (beta)
+Evidence-based prompt optimizer
