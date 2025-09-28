@@ -1,5 +1,5 @@
 <!--
-Multi-Modal AI Prompt Crafter v1.0
+Quill (Beta) - Evidence-Based Prompt Optimization v1.1
 Copyright © 2025 Dradis Holdings LLC
 All rights reserved.
 -->
@@ -1179,13 +1179,111 @@ Example structure:
 
     <script>
         /*
-        Multi-Modal AI Prompt Crafter v1.0
+        Quill (Beta) - Evidence-Based Prompt Optimization v1.1
         Copyright © 2025 Dradis Holdings LLC
         All rights reserved.
         */
         
         // Firebase Authentication Functions
         let currentUser = null;
+        
+        // Prompt Optimization Functions (Research-Based)
+        
+        // Affirmative Language Detection
+        function checkAffirmativeLanguage(element, feedbackId) {
+            const text = element.value.toLowerCase();
+            const feedbackContainer = document.getElementById(feedbackId);
+            
+            if (!feedbackContainer) {
+                console.error('Feedback container not found:', feedbackId);
+                return;
+            }
+            
+            const negativePatterns = [
+                { pattern: /\b(don't|do not)\s+be\s+verbose\b/gi, suggestion: "be concise and direct" },
+                { pattern: /\b(avoid|don't use)\s+jargon\b/gi, suggestion: "use clear, simple terminology" },
+                { pattern: /\b(don't|avoid)\s+complic/gi, suggestion: "keep it simple" },
+                { pattern: /\b(never|don't)\s+assum/gi, suggestion: "consider all perspectives" },
+                { pattern: /\b(avoid|don't)\s+being\s+bias/gi, suggestion: "maintain objectivity" },
+                { pattern: /\b(don't|avoid)\s+mak/gi, suggestion: "ensure accuracy" },
+                { pattern: /\bcan't\b/gi, suggestion: "unable to" },
+                { pattern: /\bwon't\b/gi, suggestion: "will not" }
+            ];
+            
+            let suggestions = [];
+            negativePatterns.forEach(item => {
+                if (item.pattern.test(text)) {
+                    const match = text.match(item.pattern);
+                    if (match) {
+                        suggestions.push({
+                            original: match[0],
+                            suggestion: item.suggestion,
+                            type: 'affirmative'
+                        });
+                    }
+                }
+            });
+            
+            displayFeedback(feedbackContainer, suggestions, element);
+        }
+        
+        // Token Counter with Efficiency Warnings
+        function updateTokenCount(element, counterId) {
+            const text = element.value;
+            const tokenCount = estimateTokens(text);
+            const counter = document.getElementById(counterId);
+            
+            if (!counter) {
+                console.error('Token counter not found:', counterId);
+                return;
+            }
+            
+            counter.textContent = `Tokens: ${tokenCount}`;
+            counter.className = 'token-counter';
+            
+            if (tokenCount > 500) {
+                counter.className += ' error';
+                counter.textContent += ' (Too long - consider shortening)';
+            } else if (tokenCount > 300) {
+                counter.className += ' warning';
+                counter.textContent += ' (Getting long)';
+            }
+        }
+        
+        // Simple token estimation (roughly 4 characters per token)
+        function estimateTokens(text) {
+            return Math.ceil(text.length / 4);
+        }
+        
+        // Display feedback with suggestions
+        function displayFeedback(container, suggestions, element) {
+            container.innerHTML = '';
+            
+            suggestions.forEach(item => {
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = 'feedback-item suggestion';
+                
+                const feedbackText = document.createElement('span');
+                feedbackText.className = 'feedback-text';
+                feedbackText.textContent = `Consider: "${item.suggestion}" instead of "${item.original}"`;
+                
+                const applyBtn = document.createElement('button');
+                applyBtn.className = 'apply-suggestion';
+                applyBtn.textContent = 'Apply';
+                applyBtn.type = 'button';
+                applyBtn.onclick = () => {
+                    const currentText = element.value;
+                    const newText = currentText.replace(new RegExp(item.original, 'gi'), item.suggestion);
+                    element.value = newText;
+                    checkAffirmativeLanguage(element, container.id);
+                    updateTokenCount(element, element.id + 'TokenCount');
+                };
+                
+                feedbackItem.appendChild(feedbackText);
+                feedbackItem.appendChild(applyBtn);
+                container.appendChild(feedbackItem);
+            });
+        }
         
         function signInWithGoogle() {
             const { signInWithPopup } = window.firebaseAuthFunctions;
