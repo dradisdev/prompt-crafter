@@ -1,0 +1,2045 @@
+<!--
+Quill (Beta) - Evidence-Based Prompt Optimization v1.2
+Copyright © 2025 Dradis Holdings LLC
+All rights reserved.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quill (Beta) - Evidence-Based Prompt Optimization</title>
+    
+    <!-- Firebase v9 SDK -->
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+      import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+      
+      // Your Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyCj2D_emLzgMbVEOBcnAEfSBZdw9ljQ3YE",
+        authDomain: "quill-beta1.firebaseapp.com",
+        projectId: "quill-beta1",
+        storageBucket: "quill-beta1.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "1:242836015487:web:c5cdd8ac6148e89924b24a"
+      };
+      
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const provider = new GoogleAuthProvider();
+      
+      // Make available globally
+      window.firebaseAuth = auth;
+      window.firebaseDb = db;
+      window.firebaseProvider = provider;
+      window.firebaseAuthFunctions = {
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged
+      };
+      window.firestoreFunctions = {
+        doc,
+        setDoc,
+        getDoc,
+        collection,
+        getDocs,
+        deleteDoc
+      };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header-main h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header-main p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .auth-section {
+            display: flex;
+            align-items: center;
+        }
+        
+        .auth-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sign-in-btn {
+            background: white;
+            color: #4f46e5;
+        }
+        
+        .sign-in-btn:hover {
+            background: #f3f4f6;
+            transform: translateY(-1px);
+        }
+        
+        .sign-out-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+        
+        .sign-out-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .data-management-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+        
+        .data-management-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .template-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .template-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            position: relative;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-3px);
+            border-color: #6366f1;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+        }
+        
+        .template-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .template-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        
+        .template-desc {
+            font-size: 0.875rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .template-active {
+            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+            border-color: #8b5cf6;
+        }
+        
+        .multi-model {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+        }
+        
+        .multi-model:hover {
+            border-color: #d97706;
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+        }
+        
+        .model-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #f59e0b;
+            color: white;
+            font-size: 0.65rem;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 1rem;
+        }
+        
+        .required {
+            color: #dc2626;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-group textarea#mainQuery {
+            min-height: 120px;
+        }
+        
+        .form-group textarea#context {
+            min-height: 240px;
+        }
+        
+        .help-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-tertiary {
+            background: #e5e7eb;
+            color: #374151;
+            border: 2px solid #d1d5db;
+        }
+        
+        .btn-tertiary:hover {
+            background: #d1d5db;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+        
+        .saved-prompts-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .saved-prompts-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .saved-prompt-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .saved-prompt-item:hover {
+            border-color: #6366f1;
+            transform: translateY(-1px);
+        }
+        
+        .saved-prompt-info {
+            flex-grow: 1;
+        }
+        
+        .saved-prompt-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .saved-prompt-meta {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .saved-prompt-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .saved-prompt-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .load-btn {
+            background: #6366f1;
+            color: white;
+        }
+        
+        .load-btn:hover {
+            background: #5856eb;
+        }
+        
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        
+        .output-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f3f4f6;
+        }
+        
+        .output-label {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #374151;
+            font-size: 1.1rem;
+        }
+        
+        .output-box {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            min-height: 200px;
+            border: 2px solid #374151;
+            position: relative;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        .output-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .copy-btn {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            background: #4338ca;
+            transform: scale(1.05);
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            color: #b91c1c;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            border-top: 2px solid #e5e7eb;
+            padding: 30px 40px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .footer-links a {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            font-weight: 500;
+        }
+        
+        .version {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .powered-by {
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #374151;
+            font-size: 1.3rem;
+        }
+        
+        .close {
+            color: #9ca3af;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            color: #374151;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .data-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .data-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .data-section h4 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .data-section p {
+            color: #6b7280;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .warning-text {
+            color: #dc2626 !important;
+            font-weight: 500;
+        }
+        
+        .consent-section ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        
+        .consent-section li {
+            color: #6b7280;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .consent-checkboxes {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        
+        .checkbox-label:last-child {
+            margin-bottom: 0;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            margin-top: 2px;
+            width: auto;
+        }
+        
+        .consent-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .header-main h1 {
+                font-size: 2rem;
+            }
+            
+            .header-main p {
+                font-size: 1rem;
+            }
+            
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-main">
+                    <h1>📝 Quill (Beta)</h1>
+                    <p>Evidence-Based Prompt Optimization</p>
+                </div>
+                <div class="auth-section" id="authSection">
+                    <button id="signInBtn" class="auth-btn sign-in-btn" onclick="signInWithGoogle()">
+                        Sign in with Google
+                    </button>
+                    <div id="userProfile" class="user-profile" style="display: none;">
+                        <img id="userAvatar" class="user-avatar" src="" alt="User">
+                        <div class="user-info">
+                            <div id="userName" class="user-name"></div>
+                            <div class="user-actions">
+                                <button id="dataManagementBtn" class="auth-btn data-management-btn" onclick="showDataManagement()">Data</button>
+                                <button id="signOutBtn" class="auth-btn sign-out-btn" onclick="signOutUser()">Sign Out</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-container">
+            <div class="template-section">
+                <h3 style="margin-bottom: 15px; color: #374151; font-size: 1.2rem; font-weight: 600;">📋 Research-Optimized Templates</h3>
+                <div class="template-grid">
+                    <button type="button" class="template-card" onclick="loadTemplate('product-research')">
+                        <div class="template-icon">🛍️</div>
+                        <div class="template-title">Product Research</div>
+                        <div class="template-desc">Research products, compare options, find pricing</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('business-analysis')">
+                        <div class="template-icon">📊</div>
+                        <div class="template-title">Business Analysis</div>
+                        <div class="template-desc">Market research, competitor analysis, strategy</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('technical-help')">
+                        <div class="template-icon">⚙️</div>
+                        <div class="template-title">Technical Help</div>
+                        <div class="template-desc">Coding, troubleshooting, implementation</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('content-creation')">
+                        <div class="template-icon">✍️</div>
+                        <div class="template-title">Content Creation</div>
+                        <div class="template-desc">Writing, editing, creative projects</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('learning-research')">
+                        <div class="template-icon">🎓</div>
+                        <div class="template-title">Learning & Research</div>
+                        <div class="template-desc">Academic research, learning new topics</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('decision-making')">
+                        <div class="template-icon">🤔</div>
+                        <div class="template-title">Decision Making</div>
+                        <div class="template-desc">Evaluate options, pros/cons, recommendations</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('creative-projects')">
+                        <div class="template-icon">🎨</div>
+                        <div class="template-title">Creative Projects</div>
+                        <div class="template-desc">Brainstorming, creative writing, design concepts</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('data-analysis')">
+                        <div class="template-icon">📈</div>
+                        <div class="template-title">Data Analysis</div>
+                        <div class="template-desc">Interpret data, find insights, create visualizations</div>
+                    </button>
+                    <button type="button" class="template-card" onclick="loadTemplate('workflow-automation')">
+                        <div class="template-icon">🔄</div>
+                        <div class="template-title">Workflow Automation</div>
+                        <div class="template-desc">Process optimization, automation ideas</div>
+                    </button>
+                    <button type="button" class="template-card multi-model" onclick="loadTemplate('visual-content')">
+                        <div class="template-icon">🖼️</div>
+                        <div class="template-title">Visual Content</div>
+                        <div class="template-desc">Image generation, visual design concepts</div>
+                        <div class="model-badge">Advanced/Experimental</div>
+                    </button>
+                    <button type="button" class="template-card multi-model" onclick="loadTemplate('video-audio')">
+                        <div class="template-icon">🎬</div>
+                        <div class="template-title">Video & Audio</div>
+                        <div class="template-desc">Video creation, audio generation, multimedia</div>
+                        <div class="model-badge">Advanced/Experimental</div>
+                    </button>
+                    <button type="button" class="template-card multi-model" onclick="loadTemplate('code-generation')">
+                        <div class="template-icon">💻</div>
+                        <div class="template-title">Advanced Coding</div>
+                        <div class="template-desc">Complex development, specialized languages</div>
+                        <div class="model-badge">Advanced/Experimental</div>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="promptForm">
+                <div class="form-group">
+                    <label for="aiModel">AI Model Selection</label>
+                    <select id="aiModel" name="aiModel">
+                        <option value="claude">Claude (Text, Analysis, Research)</option>
+                        <option value="multimodel">Multi-Model Workflow (Advanced)</option>
+                    </select>
+                    <div class="help-text">Choose the AI approach for your task</div>
+                </div>
+
+                <div class="form-group" id="modelWorkflowGroup" style="display: none;">
+                    <label for="modelWorkflow">Model Workflow</label>
+                    <textarea id="modelWorkflow" name="modelWorkflow" placeholder="Describe the multi-model workflow needed:
+- Claude: Research and planning
+- DALL-E/Midjourney: Image generation  
+- RunwayML: Video creation
+- Custom models: Specialized tasks"></textarea>
+                    <div class="help-text">Describe which models should be used and how they work together</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Primary Role Assignment <span class="required">*</span></label>
+                    <select id="role" name="role" required>
+                        <option value="">Select a role...</option>
+                        <option value="research assistant">Research Assistant</option>
+                        <option value="technical advisor">Technical Advisor</option>
+                        <option value="technical research consultant">Technical Research Consultant</option>
+                        <option value="writing partner">Writing Partner</option>
+                        <option value="analyst">Data Analyst</option>
+                        <option value="consultant">Strategy Consultant</option>
+                        <option value="tutor">Educational Tutor</option>
+                        <option value="custom">Custom Role</option>
+                    </select>
+                    <div class="help-text">What specific role should the AI assume for this task?</div>
+                </div>
+
+                <div class="form-group" id="customRoleGroup" style="display: none;">
+                    <label for="customRole">Custom Role Description</label>
+                    <input type="text" id="customRole" name="customRole" placeholder="e.g., UX Design Critic, Financial Planner, Project Manager">
+                </div>
+
+                <div class="form-group">
+                    <label for="audience">Target Audience</label>
+                    <select id="audience" name="audience">
+                        <option value="">Select audience...</option>
+                        <option value="expert">Expert in the field</option>
+                        <option value="professional">Working professional</option>
+                        <option value="student">Student/learner</option>
+                        <option value="general">General audience</option>
+                        <option value="executive">Executive/decision-maker</option>
+                        <option value="technical">Technical specialist</option>
+                        <option value="custom">Custom audience</option>
+                    </select>
+                    <div class="help-text">Who will be reading or using the AI's response?</div>
+                </div>
+
+                <div class="form-group" id="customAudienceGroup" style="display: none;">
+                    <label for="customAudience">Custom Audience Description</label>
+                    <input type="text" id="customAudience" name="customAudience" placeholder="Describe the specific audience...">
+                </div>
+
+                <div class="form-group">
+                    <label for="mainQuery">Your Main Question/Request <span class="required">*</span></label>
+                    <textarea id="mainQuery" name="mainQuery" placeholder="What specifically do you want the AI to help you with?" required></textarea>
+                    <div class="help-text">Be as specific as possible about what you need</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="context">Context & Background</label>
+                    <textarea id="context" name="context" placeholder="Provide relevant background information, your situation, constraints, etc.
+
+Example structure:
+- Current situation: [describe your setup/problem]
+- What you've tried: [previous solutions/approaches]
+- Constraints: [budget, timeline, technical limitations]
+- Goals: [what success looks like]"></textarea>
+                    <div class="help-text">What does the AI need to know about your situation?</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="stakes">Stakes & Importance</label>
+                    <select id="stakes" name="stakes">
+                        <option value="">Select importance level...</option>
+                        <option value="high">High - Making important decisions based on this</option>
+                        <option value="medium" selected>Medium - Need reliable information</option>
+                        <option value="low">Low - General exploration/learning</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div class="help-text">How critical is accuracy for your use case?</div>
+                </div>
+
+                <div class="form-group" id="customStakesGroup" style="display: none;">
+                    <label for="customStakes">Custom Stakes Description</label>
+                    <textarea id="customStakes" name="customStakes" placeholder="Describe why accuracy/quality matters for your specific situation..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="outputType">Desired Output Type</label>
+                    <select id="outputType" name="outputType">
+                        <option value="">Select output format...</option>
+                        <option value="recommendations">Specific Recommendations</option>
+                        <option value="analysis">Detailed Analysis</option>
+                        <option value="comparison">Comparison/Evaluation</option>
+                        <option value="stepbystep">Step-by-Step Guide</option>
+                        <option value="summary">Summary/Overview</option>
+                        <option value="list">Organized List</option>
+                        <option value="custom">Custom Format</option>
+                    </select>
+                    <div class="help-text">What format would be most useful?</div>
+                </div>
+
+                <div class="form-group" id="customOutputGroup" style="display: none;">
+                    <label for="customOutput">Custom Output Description</label>
+                    <input type="text" id="customOutput" name="customOutput" placeholder="Describe the specific format you need...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="researchNeeds">Research & Information Needs</label>
+                    <select id="researchNeeds" name="researchNeeds">
+                        <option value="">Select research requirements...</option>
+                        <option value="current">Find current information on this topic</option>
+                        <option value="products">Research and compare specific products or services</option>
+                        <option value="trends">Analyze trends and emerging patterns</option>
+                        <option value="verify">Verify facts and validate claims</option>
+                        <option value="comprehensive">Conduct thorough multi-source research</option>
+                        <option value="custom">Custom research needs</option>
+                    </select>
+                    <div class="help-text">What type of web research should the AI perform?</div>
+                </div>
+
+                <div class="form-group" id="customResearchGroup" style="display: none;">
+                    <label for="customResearch">Custom Research Requirements</label>
+                    <textarea id="customResearch" name="customResearch" placeholder="Describe specific research needs, sources to check, or information to gather..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="verification">Accuracy & Citation Level</label>
+                    <select id="verification" name="verification">
+                        <option value="">Select verification level...</option>
+                        <option value="sources">Cite specific sources with publication dates</option>
+                        <option value="confidence">Indicate confidence levels for key claims</option>
+                        <option value="recent">Prioritize information from the last 6 months</option>
+                        <option value="standard">Support main points with relevant sources</option>
+                        <option value="custom">Custom verification needs</option>
+                    </select>
+                    <div class="help-text">How should the AI handle sources and accuracy?</div>
+                </div>
+
+                <div class="form-group" id="customVerificationGroup" style="display: none;">
+                    <label for="customVerification">Custom Verification Requirements</label>
+                    <textarea id="customVerification" name="customVerification" placeholder="Describe specific verification or quality requirements..."></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="btn btn-primary" onclick="generatePrompt()">Generate Prompt</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                    <button type="button" class="btn btn-tertiary" onclick="savePrompt()">Save Prompt</button>
+                </div>
+            </form>
+            
+            <div class="saved-prompts-section" id="savedPromptsSection">
+                <h3 style="margin-bottom: 15px; color: #374151; font-size: 1.1rem; font-weight: 600;">💾 Saved Prompts</h3>
+                <div id="savedPromptsList" class="saved-prompts-list"></div>
+            </div>
+            
+            <div class="output-section" id="outputSection" style="display: none;">
+                <div class="output-label">📋 Generated Prompt (Copy & Paste to AI)</div>
+                <div class="output-box" id="outputBox">
+                    <div class="output-actions">
+                        <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+                    </div>
+                    <div id="promptOutput"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <div class="copyright">© 2025 Dradis Holdings LLC</div>
+                    <a href="#" onclick="showAbout(); return false;">About</a>
+                </div>
+                <div class="version">v1.2 Beta</div>
+                <div class="powered-by">Evidence-Based Optimization</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Management Modal -->
+    <div id="dataManagementModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Your Data Management</h3>
+                <span class="close" onclick="closeDataManagement()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="data-section">
+                    <h4>Export Your Data</h4>
+                    <p>Download all your saved prompts and account data in JSON format.</p>
+                    <button class="btn btn-secondary" onclick="exportUserData()">Download My Data</button>
+                </div>
+                
+                <div class="data-section">
+                    <h4>Delete Account</h4>
+                    <p class="warning-text">This will permanently delete your account and all saved prompts. This action cannot be undone.</p>
+                    <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete My Account</button>
+                </div>
+                
+                <div class="data-section">
+                    <h4>Privacy Information</h4>
+                    <p>We store your Google account information (name, email, profile picture) and your saved prompts. All data is encrypted and stored securely. You can export or delete your data at any time.</p>
+                    <p><strong>Data Processing Legal Basis:</strong> Legitimate interest for providing cloud sync functionality.</p>
+                    <p><strong>Data Retention:</strong> Until you delete your account or request data deletion.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Consent Modal -->
+    <div id="privacyConsentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Privacy & Data Consent</h3>
+            </div>
+            <div class="modal-body">
+                <div class="consent-section">
+                    <h4>Data We Collect</h4>
+                    <ul>
+                        <li>Google account information (name, email, profile picture)</li>
+                        <li>Your saved prompts and preferences</li>
+                        <li>Usage analytics (anonymous)</li>
+                    </ul>
+                    
+                    <h4>How We Use Your Data</h4>
+                    <ul>
+                        <li>Provide cloud sync for your saved prompts</li>
+                        <li>Authenticate your account across devices</li>
+                        <li>Improve our service through anonymous usage analytics</li>
+                    </ul>
+                    
+                    <h4>Your Rights</h4>
+                    <ul>
+                        <li>Export all your data at any time</li>
+                        <li>Delete your account and all data</li>
+                        <li>Withdraw consent (which will delete your account)</li>
+                    </ul>
+                    
+                    <div class="consent-checkboxes">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="consentRequired" required>
+                            I consent to the collection and processing of my data as described above (Required)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="consentAnalytics">
+                            I consent to anonymous usage analytics to help improve the service (Optional)
+                        </label>
+                    </div>
+                    
+                    <div class="consent-actions">
+                        <button class="btn btn-primary" onclick="acceptConsent()">Accept & Continue</button>
+                        <button class="btn btn-secondary" onclick="declineConsent()">Decline</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+        Quill (Beta) - Evidence-Based Prompt Optimization v1.2
+        Copyright © 2025 Dradis Holdings LLC
+        All rights reserved.
+        */
+        
+        // Firebase Authentication Functions
+        let currentUser = null;
+        
+        function signInWithGoogle() {
+            const { signInWithPopup } = window.firebaseAuthFunctions;
+            
+            signInWithPopup(window.firebaseAuth, window.firebaseProvider)
+                .then(function(result) {
+                    currentUser = result.user;
+                    updateAuthUI();
+                    syncUserData();
+                    console.log('User signed in:', currentUser.displayName);
+                })
+                .catch(function(error) {
+                    console.error('Sign-in error:', error);
+                    alert('Sign-in failed. Please try again.');
+                });
+        }
+        
+        function signOutUser() {
+            const { signOut } = window.firebaseAuthFunctions;
+            
+            signOut(window.firebaseAuth)
+                .then(function() {
+                    currentUser = null;
+                    updateAuthUI();
+                    console.log('User signed out');
+                })
+                .catch(function(error) {
+                    console.error('Sign-out error:', error);
+                });
+        }
+        
+        function updateAuthUI() {
+            const signInBtn = document.getElementById('signInBtn');
+            const userProfile = document.getElementById('userProfile');
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            
+            if (currentUser) {
+                signInBtn.style.display = 'none';
+                userProfile.style.display = 'flex';
+                userAvatar.src = currentUser.photoURL || '';
+                userName.textContent = currentUser.displayName || currentUser.email;
+            } else {
+                signInBtn.style.display = 'block';
+                userProfile.style.display = 'none';
+            }
+        }
+        
+        function syncUserData() {
+            if (!currentUser) return;
+            loadUserPrompts();
+        }
+        
+        async function loadUserPrompts() {
+            if (!currentUser) return;
+            
+            try {
+                const { collection, getDocs } = window.firestoreFunctions;
+                const userPromptsRef = collection(window.firebaseDb, 'users', currentUser.uid, 'savedPrompts');
+                const querySnapshot = await getDocs(userPromptsRef);
+                
+                const cloudPrompts = [];
+                querySnapshot.forEach(function(doc) {
+                    cloudPrompts.push({ id: doc.id, ...doc.data() });
+                });
+                
+                mergePrompts(cloudPrompts);
+                
+            } catch (error) {
+                console.error('Error loading user prompts:', error);
+            }
+        }
+        
+        function mergePrompts(cloudPrompts) {
+            const localPrompts = getSavedPrompts();
+            const mergedPrompts = [...cloudPrompts];
+            
+            localPrompts.forEach(function(localPrompt) {
+                if (!cloudPrompts.find(function(cloudPrompt) { return cloudPrompt.id === localPrompt.id; })) {
+                    mergedPrompts.push(localPrompt);
+                }
+            });
+            
+            localStorage.setItem('promptCrafterSaved', JSON.stringify(mergedPrompts));
+            displaySavedPrompts();
+        }
+        
+        // Data Management Functions
+        function showDataManagement() {
+            document.getElementById('dataManagementModal').style.display = 'block';
+        }
+        
+        function closeDataManagement() {
+            document.getElementById('dataManagementModal').style.display = 'none';
+        }
+        
+        async function exportUserData() {
+            if (!currentUser) return;
+            
+            try {
+                const userData = {
+                    user: {
+                        uid: currentUser.uid,
+                        name: currentUser.displayName,
+                        email: currentUser.email,
+                        exportDate: new Date().toISOString()
+                    },
+                    savedPrompts: getSavedPrompts(),
+                    analytics: getAnalytics()
+                };
+                
+                const dataStr = JSON.stringify(userData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'quill-data-' + new Date().toISOString().split('T')[0] + '.json';
+                link.click();
+                
+                URL.revokeObjectURL(url);
+                alert('Your data has been downloaded successfully.');
+                
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                alert('Error exporting data. Please try again.');
+            }
+        }
+        
+        function confirmDeleteAccount() {
+            const confirmation = prompt('Type "DELETE" to confirm permanent account deletion:');
+            if (confirmation === 'DELETE') {
+                deleteUserAccount();
+            } else {
+                alert('Account deletion cancelled.');
+            }
+        }
+        
+        async function deleteUserAccount() {
+            if (!currentUser) return;
+            
+            try {
+                const { collection, getDocs, deleteDoc, doc } = window.firestoreFunctions;
+                const userPromptsRef = collection(window.firebaseDb, 'users', currentUser.uid, 'savedPrompts');
+                const querySnapshot = await getDocs(userPromptsRef);
+                
+                const deletePromises = [];
+                querySnapshot.forEach(function(promptDoc) {
+                    deletePromises.push(deleteDoc(promptDoc.ref));
+                });
+                await Promise.all(deletePromises);
+                
+                const userDocRef = doc(window.firebaseDb, 'users', currentUser.uid);
+                await deleteDoc(userDocRef);
+                
+                localStorage.removeItem('promptCrafterSaved');
+                localStorage.removeItem('promptCrafterAnalytics');
+                localStorage.removeItem('promptCrafterConsent');
+                
+                await signOutUser();
+                
+                alert('Your account and all data have been permanently deleted.');
+                closeDataManagement();
+                
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                alert('Error deleting account. Please contact support.');
+            }
+        }
+        
+        // Privacy Consent Functions
+        function checkUserConsent() {
+            const consent = localStorage.getItem('promptCrafterConsent');
+            if (!consent && currentUser) {
+                setTimeout(function() {
+                    document.getElementById('privacyConsentModal').style.display = 'block';
+                }, 1000);
+            }
+        }
+        
+        function acceptConsent() {
+            const requiredConsent = document.getElementById('consentRequired').checked;
+            const analyticsConsent = document.getElementById('consentAnalytics').checked;
+            
+            if (!requiredConsent) {
+                alert('Required consent must be given to use the service.');
+                return;
+            }
+            
+            const consentData = {
+                required: true,
+                analytics: analyticsConsent,
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            };
+            
+            localStorage.setItem('promptCrafterConsent', JSON.stringify(consentData));
+            document.getElementById('privacyConsentModal').style.display = 'none';
+        }
+        
+        function declineConsent() {
+            alert('Without consent, we cannot provide cloud sync services. You will be signed out.');
+            signOutUser();
+            document.getElementById('privacyConsentModal').style.display = 'none';
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const dataModal = document.getElementById('dataManagementModal');
+            const consentModal = document.getElementById('privacyConsentModal');
+            
+            if (event.target === dataModal) {
+                closeDataManagement();
+            }
+        }
+        
+        // Listen for auth state changes
+        window.addEventListener('DOMContentLoaded', function() {
+            const { onAuthStateChanged } = window.firebaseAuthFunctions;
+            
+            onAuthStateChanged(window.firebaseAuth, function(user) {
+                currentUser = user;
+                updateAuthUI();
+                if (user) {
+                    checkUserConsent();
+                    syncUserData();
+                }
+            });
+            
+            displaySavedPrompts();
+            loadSharedPrompt();
+        });
+
+        // Form event handlers
+        document.getElementById('aiModel').addEventListener('change', function() {
+            const workflowGroup = document.getElementById('modelWorkflowGroup');
+            workflowGroup.style.display = this.value === 'multimodel' ? 'block' : 'none';
+        });
+
+        document.getElementById('role').addEventListener('change', function() {
+            const customGroup = document.getElementById('customRoleGroup');
+            customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+        
+        document.getElementById('audience').addEventListener('change', function() {
+            const customGroup = document.getElementById('customAudienceGroup');
+            customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        document.getElementById('stakes').addEventListener('change', function() {
+            const customGroup = document.getElementById('customStakesGroup');
+            customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        document.getElementById('outputType').addEventListener('change', function() {
+            const customGroup = document.getElementById('customOutputGroup');
+            customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        document.getElementById('researchNeeds').addEventListener('change', function() {
+            const customGroup = document.getElementById('customResearchGroup');
+            customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        document.getElementById('verification').addEventListener('change', function() {
+            const customGroup = document.getElementById('customVerificationGroup');
+            customGroup.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
+        function generatePrompt() {
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            const form = document.getElementById('promptForm');
+            const formData = new FormData(form);
+            
+            const role = formData.get('role') === 'custom' ? formData.get('customRole') : formData.get('role');
+            const mainQuery = formData.get('mainQuery');
+            
+            if (!role || !mainQuery) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = 'Please fill in the required fields: Role and Main Question/Request.';
+                form.insertBefore(errorDiv, form.firstChild);
+                return;
+            }
+            
+            const context = formData.get('context');
+            const audience = formData.get('audience') === 'custom' ? formData.get('customAudience') : formData.get('audience');
+            const stakes = formData.get('stakes');
+            const customStakes = formData.get('customStakes');
+            const outputType = formData.get('outputType') === 'custom' ? formData.get('customOutput') : formData.get('outputType');
+            const researchNeeds = formData.get('researchNeeds') === 'custom' ? formData.get('customResearch') : formData.get('researchNeeds');
+            const verification = formData.get('verification') === 'custom' ? formData.get('customVerification') : formData.get('verification');
+            const aiModel = formData.get('aiModel');
+            const modelWorkflow = formData.get('modelWorkflow');
+            
+            let prompt = '';
+            
+            if (aiModel === 'multimodel') {
+                prompt += '###MULTI-MODEL AI WORKFLOW REQUEST###\n\n';
+                prompt += '###PRIMARY COORDINATOR###\nYou are a ' + role + ' coordinating this multi-model workflow.\n\n';
+                prompt += '###TASK###\n' + mainQuery + '\n\n';
+                
+                if (context) {
+                    prompt += '###CONTEXT###\n' + context + '\n\n';
+                }
+                
+                if (modelWorkflow) {
+                    prompt += '###WORKFLOW ARCHITECTURE###\n' + modelWorkflow + '\n\n';
+                }
+                
+                prompt += '###YOUR ROLE###\nPlan and coordinate the workflow, provide detailed prompts for each specialized model, and integrate the results into a cohesive final output.\n\n';
+            } else {
+                prompt += '###ROLE ASSIGNMENT###\n';
+                prompt += 'You are a ' + role + '.\n\n';
+                
+                prompt += '###TASK###\n' + mainQuery + '\n\n';
+                
+                if (context) {
+                    prompt += '###CONTEXT###\n' + context + '\n\n';
+                }
+            }
+            
+            if (audience) {
+                const audienceGuidance = getAudienceGuidance(audience);
+                if (audienceGuidance) {
+                    prompt += '###AUDIENCE###\n' + audienceGuidance + '\n\n';
+                }
+            }
+            
+            const requirements = [];
+            
+            // Only include stakes if high AND research is needed
+            if (stakes === 'high' && researchNeeds) {
+                const stakesText = stakes === 'custom' ? customStakes : 'This requires high-confidence information with verified sources due to decision-making implications.';
+                requirements.push('• IMPORTANCE: ' + stakesText);
+            }
+            
+            if (outputType) {
+                const outputText = getOutputText(outputType);
+                if (outputText) {
+                    requirements.push('• DESIRED OUTPUT: ' + outputText);
+                }
+            }
+            
+            if (researchNeeds) {
+                const researchText = getResearchText(researchNeeds);
+                if (researchText) {
+                    requirements.push('• RESEARCH APPROACH: ' + researchText);
+                }
+            }
+            
+            if (verification) {
+                const verificationText = getVerificationText(verification);
+                if (verificationText) {
+                    requirements.push('• ACCURACY & SOURCES: ' + verificationText);
+                }
+            }
+            
+            if (requirements.length > 0) {
+                prompt += '###REQUIREMENTS###\n' + requirements.join('\n') + '\n\n';
+            }
+            
+            prompt += '###SUCCESS CRITERIA###\n';
+            prompt += 'Please ask any necessary follow-up questions to focus your research and ensure you provide the most useful results for the specific situation described above.';
+            
+            document.getElementById('promptOutput').textContent = prompt;
+            document.getElementById('outputSection').style.display = 'block';
+            
+            trackPromptGeneration({
+                role: role,
+                audience: formData.get('audience'),
+                hasContext: !!context,
+                stakes: formData.get('stakes'),
+                outputType: formData.get('outputType'),
+                researchNeeds: formData.get('researchNeeds'),
+                verification: formData.get('verification'),
+                aiModel: aiModel,
+                isMultiModel: aiModel === 'multimodel',
+                promptLength: prompt.length,
+                delimitersUsed: true,
+                timestamp: new Date().toISOString()
+            });
+            
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function getAudienceGuidance(audience) {
+            const guidanceMap = {
+                'expert': 'The audience is experts in the field. Use technical terminology without definitions. Assume deep domain knowledge and focus on nuanced insights.',
+                'professional': 'The audience is working professionals. Balance accessibility with precision. Define specialized terms briefly. Use clear explanations without oversimplifying.',
+                'student': 'The audience is students and learners. Explain concepts step-by-step with examples. Define all technical terms. Build understanding progressively.',
+                'general': 'The audience is a general audience. Avoid jargon entirely. Use analogies and everyday language. Prioritize clarity and accessibility.',
+                'executive': 'The audience is executives and decision-makers. Lead with high-level insights and business impact. Include ROI considerations. Keep details concise.',
+                'technical': 'The audience is technical specialists. Prioritize implementation details, code examples, and specifications. Include edge cases and performance considerations.'
+            };
+            return guidanceMap[audience] || '';
+        }
+        
+        function getOutputText(outputType) {
+            const outputMap = {
+                'recommendations': 'Provide specific, actionable recommendations with clear reasoning and implementation steps.',
+                'analysis': 'Provide a detailed analysis breaking down key factors, implications, and underlying patterns.',
+                'comparison': 'Compare and evaluate the different options with structured pros/cons analysis.',
+                'stepbystep': 'Provide a clear step-by-step guide with actionable instructions I can follow immediately.',
+                'summary': 'Provide a concise but comprehensive overview that captures the essential points.',
+                'list': 'Organize the information in a clear, structured list format with logical groupings.'
+            };
+            return outputMap[outputType] || '';
+        }
+        
+        function getResearchText(researchNeeds) {
+            const researchMap = {
+                'current': 'Search for the most current and up-to-date information on this topic. Prioritize recent sources.',
+                'products': 'Research specific products or services including current pricing, availability, and user reviews. Compare options with concrete data.',
+                'trends': 'Analyze current trends and emerging patterns. Identify developments over time and forecast implications.',
+                'verify': 'Verify facts and validate claims using multiple reliable sources. Note any conflicting information.',
+                'comprehensive': 'Conduct thorough research using multiple authoritative sources. Synthesize findings into a complete picture.'
+            };
+            return researchMap[researchNeeds] || '';
+        }
+        
+        function getVerificationText(verification) {
+            const verificationMap = {
+                'sources': 'Cite specific sources for factual claims. Include publication dates and author credentials where relevant.',
+                'confidence': 'Indicate confidence levels for key claims. Note if sources conflict or if information is uncertain.',
+                'recent': 'Prioritize information from the last 6 months. Date-stamp all time-sensitive data.',
+                'standard': 'Support main points with relevant sources. Use reliable, authoritative references.'
+            };
+            return verificationMap[verification] || '';
+        }
+        
+        function trackPromptGeneration(data) {
+            const analytics = getAnalytics();
+            analytics.prompts.push(data);
+            analytics.totalPrompts++;
+            analytics.lastUpdated = new Date().toISOString();
+            localStorage.setItem('promptCrafterAnalytics', JSON.stringify(analytics));
+        }
+        
+        function getAnalytics() {
+            const stored = localStorage.getItem('promptCrafterAnalytics');
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            return {
+                prompts: [],
+                totalPrompts: 0,
+                lastUpdated: null,
+                version: '1.2'
+            };
+        }
+        
+        function trackCopy() {
+            const analytics = getAnalytics();
+            analytics.totalCopies = (analytics.totalCopies || 0) + 1;
+            localStorage.setItem('promptCrafterAnalytics', JSON.stringify(analytics));
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('promptOutput').textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.style.background = '#059669';
+                
+                trackCopy();
+                
+                setTimeout(function() {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '#4f46e5';
+                }, 2000);
+            });
+        }
+
+        function savePrompt() {
+            const form = document.getElementById('promptForm');
+            const formData = new FormData(form);
+            
+            const role = formData.get('role') === 'custom' ? formData.get('customRole') : formData.get('role');
+            const mainQuery = formData.get('mainQuery');
+            
+            if (!role || !mainQuery) {
+                alert('Please fill in the required fields before saving.');
+                return;
+            }
+            
+            const savedPrompt = {
+                id: Date.now().toString(),
+                title: mainQuery.substring(0, 50) + (mainQuery.length > 50 ? '...' : ''),
+                role: role,
+                audience: formData.get('audience'),
+                mainQuery: formData.get('mainQuery'),
+                context: formData.get('context'),
+                stakes: formData.get('stakes'),
+                customStakes: formData.get('customStakes'),
+                outputType: formData.get('outputType'),
+                customOutput: formData.get('customOutput'),
+                researchNeeds: formData.get('researchNeeds'),
+                customResearch: formData.get('customResearch'),
+                verification: formData.get('verification'),
+                customVerification: formData.get('customVerification'),
+                aiModel: formData.get('aiModel'),
+                modelWorkflow: formData.get('modelWorkflow'),
+                createdAt: new Date().toISOString(),
+                lastUsed: new Date().toISOString()
+            };
+            
+            const savedPrompts = getSavedPrompts();
+            savedPrompts.push(savedPrompt);
+            localStorage.setItem('promptCrafterSaved', JSON.stringify(savedPrompts));
+            
+            if (currentUser) {
+                savePromptToFirestore(savedPrompt);
+            }
+            
+            const analytics = getAnalytics();
+            analytics.totalSaves = (analytics.totalSaves || 0) + 1;
+            localStorage.setItem('promptCrafterAnalytics', JSON.stringify(analytics));
+            
+            displaySavedPrompts();
+            alert('Prompt saved successfully!');
+        }
+        
+        async function savePromptToFirestore(promptData) {
+            if (!currentUser) return;
+            
+            try {
+                const { doc, setDoc } = window.firestoreFunctions;
+                const promptRef = doc(window.firebaseDb, 'users', currentUser.uid, 'savedPrompts', promptData.id);
+                await setDoc(promptRef, promptData);
+                console.log('Prompt saved to Firestore');
+            } catch (error) {
+                console.error('Error saving to Firestore:', error);
+            }
+        }
+        
+        function getSavedPrompts() {
+            const saved = localStorage.getItem('promptCrafterSaved');
+            return saved ? JSON.parse(saved) : [];
+        }
+        
+        function displaySavedPrompts() {
+            const savedPrompts = getSavedPrompts();
+            const container = document.getElementById('savedPromptsList');
+            
+            if (savedPrompts.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; font-style: italic; text-align: center; padding: 20px;">No saved prompts yet. Save your first prompt to get started!</p>';
+                return;
+            }
+            
+            const sortedPrompts = savedPrompts.sort(function(a, b) {
+                return new Date(b.lastUsed) - new Date(a.lastUsed);
+            });
+            
+            container.innerHTML = sortedPrompts.map(function(prompt) {
+                return '<div class="saved-prompt-item">' +
+                    '<div class="saved-prompt-info">' +
+                        '<div class="saved-prompt-title">' + prompt.title + '</div>' +
+                        '<div class="saved-prompt-meta">' +
+                            prompt.role + ' • ' + new Date(prompt.createdAt).toLocaleDateString() + ' • ' + (prompt.aiModel === 'multimodel' ? 'Multi-Model' : 'Claude') +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="saved-prompt-actions">' +
+                        '<button class="load-btn" onclick="loadSavedPrompt(\'' + prompt.id + '\')">Load</button>' +
+                        '<button class="delete-btn" onclick="deleteSavedPrompt(\'' + prompt.id + '\')">Delete</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+        
+        function loadSavedPrompt(id) {
+            const savedPrompts = getSavedPrompts();
+            const prompt = savedPrompts.find(function(p) { return p.id === id; });
+            
+            if (!prompt) return;
+            
+            document.querySelectorAll('.template-card').forEach(function(card) {
+                card.classList.remove('template-active');
+            });
+            
+            document.getElementById('role').value = prompt.role === prompt.customRole ? 'custom' : prompt.role;
+            document.getElementById('customRole').value = prompt.customRole || '';
+            document.getElementById('audience').value = prompt.audience || '';
+            document.getElementById('customAudience').value = prompt.customAudience || '';
+            document.getElementById('mainQuery').value = prompt.mainQuery;
+            document.getElementById('context').value = prompt.context || '';
+            document.getElementById('stakes').value = prompt.stakes || '';
+            document.getElementById('customStakes').value = prompt.customStakes || '';
+            document.getElementById('outputType').value = prompt.outputType || '';
+            document.getElementById('customOutput').value = prompt.customOutput || '';
+            document.getElementById('researchNeeds').value = prompt.researchNeeds || '';
+            document.getElementById('customResearch').value = prompt.customResearch || '';
+            document.getElementById('verification').value = prompt.verification || '';
+            document.getElementById('customVerification').value = prompt.customVerification || '';
+            document.getElementById('aiModel').value = prompt.aiModel || 'claude';
+            document.getElementById('modelWorkflow').value = prompt.modelWorkflow || '';
+            
+            document.getElementById('customRoleGroup').style.display = prompt.role === 'custom' ? 'block' : 'none';
+            document.getElementById('customAudienceGroup').style.display = prompt.audience === 'custom' ? 'block' : 'none';
+            document.getElementById('customStakesGroup').style.display = prompt.stakes === 'custom' ? 'block' : 'none';
+            document.getElementById('customOutputGroup').style.display = prompt.outputType === 'custom' ? 'block' : 'none';
+            document.getElementById('customResearchGroup').style.display = prompt.researchNeeds === 'custom' ? 'block' : 'none';
+            document.getElementById('customVerificationGroup').style.display = prompt.verification === 'custom' ? 'block' : 'none';
+            document.getElementById('modelWorkflowGroup').style.display = prompt.aiModel === 'multimodel' ? 'block' : 'none';
+            
+            prompt.lastUsed = new Date().toISOString();
+            const allSavedPrompts = getSavedPrompts();
+            const index = allSavedPrompts.findIndex(function(p) { return p.id === id; });
+            allSavedPrompts[index] = prompt;
+            localStorage.setItem('promptCrafterSaved', JSON.stringify(allSavedPrompts));
+            
+            document.getElementById('promptForm').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function deleteSavedPrompt(id) {
+            if (!confirm('Are you sure you want to delete this saved prompt?')) return;
+            
+            const allPrompts = getSavedPrompts();
+            const filtered = allPrompts.filter(function(p) { return p.id !== id; });
+            localStorage.setItem('promptCrafterSaved', JSON.stringify(filtered));
+            displaySavedPrompts();
+        }
+        
+        function setSmartDefaults(templateId) {
+            // Get current form values to check if user has already made selections
+            const currentAudience = document.getElementById('audience').value;
+            const currentStakes = document.getElementById('stakes').value;
+            const currentOutput = document.getElementById('outputType').value;
+            const currentResearch = document.getElementById('researchNeeds').value;
+            const currentVerification = document.getElementById('verification').value;
+            
+            // Only set defaults if fields are empty (respect user's existing choices)
+            if (templateId === 'product-research') {
+                if (!currentAudience) document.getElementById('audience').value = 'professional';
+                if (!currentStakes) document.getElementById('stakes').value = 'high';
+                if (!currentOutput) document.getElementById('outputType').value = 'comparison';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'products';
+                if (!currentVerification) document.getElementById('verification').value = 'sources';
+            } else if (templateId === 'business-analysis') {
+                if (!currentAudience) document.getElementById('audience').value = 'executive';
+                if (!currentStakes) document.getElementById('stakes').value = 'high';
+                if (!currentOutput) document.getElementById('outputType').value = 'analysis';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'comprehensive';
+                if (!currentVerification) document.getElementById('verification').value = 'sources';
+            } else if (templateId === 'technical-help') {
+                if (!currentAudience) document.getElementById('audience').value = 'technical';
+                if (!currentStakes) document.getElementById('stakes').value = 'medium';
+                if (!currentOutput) document.getElementById('outputType').value = 'stepbystep';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'current';
+                if (!currentVerification) document.getElementById('verification').value = 'standard';
+            } else if (templateId === 'content-creation') {
+                if (!currentAudience) document.getElementById('audience').value = 'professional';
+                if (!currentStakes) document.getElementById('stakes').value = 'medium';
+                if (!currentOutput) document.getElementById('outputType').value = 'recommendations';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'trends';
+                if (!currentVerification) document.getElementById('verification').value = 'standard';
+            } else if (templateId === 'learning-research') {
+                if (!currentAudience) document.getElementById('audience').value = 'student';
+                if (!currentStakes) document.getElementById('stakes').value = 'low';
+                if (!currentOutput) document.getElementById('outputType').value = 'stepbystep';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'comprehensive';
+                if (!currentVerification) document.getElementById('verification').value = 'sources';
+            } else if (templateId === 'decision-making') {
+                if (!currentAudience) document.getElementById('audience').value = 'professional';
+                if (!currentStakes) document.getElementById('stakes').value = 'high';
+                if (!currentOutput) document.getElementById('outputType').value = 'comparison';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'verify';
+                if (!currentVerification) document.getElementById('verification').value = 'confidence';
+            } else if (templateId === 'creative-projects') {
+                if (!currentAudience) document.getElementById('audience').value = 'general';
+                if (!currentStakes) document.getElementById('stakes').value = 'medium';
+                if (!currentOutput) document.getElementById('outputType').value = 'recommendations';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'trends';
+                if (!currentVerification) document.getElementById('verification').value = 'standard';
+            } else if (templateId === 'data-analysis') {
+                if (!currentAudience) document.getElementById('audience').value = 'executive';
+                if (!currentStakes) document.getElementById('stakes').value = 'high';
+                if (!currentOutput) document.getElementById('outputType').value = 'analysis';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'verify';
+                if (!currentVerification) document.getElementById('verification').value = 'confidence';
+            } else if (templateId === 'workflow-automation') {
+                if (!currentAudience) document.getElementById('audience').value = 'technical';
+                if (!currentStakes) document.getElementById('stakes').value = 'medium';
+                if (!currentOutput) document.getElementById('outputType').value = 'stepbystep';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'current';
+                if (!currentVerification) document.getElementById('verification').value = 'sources';
+            } else if (templateId === 'visual-content' || templateId === 'video-audio' || templateId === 'code-generation') {
+                if (!currentAudience) document.getElementById('audience').value = 'professional';
+                if (!currentStakes) document.getElementById('stakes').value = 'medium';
+                if (!currentOutput) document.getElementById('outputType').value = 'stepbystep';
+                if (!currentResearch) document.getElementById('researchNeeds').value = 'current';
+                if (!currentVerification) document.getElementById('verification').value = 'sources';
+            }
+        }
+        
+        function loadTemplate(templateId) {
+            const template = templates[templateId];
+            if (!template) return;
+            
+            document.querySelectorAll('.template-card').forEach(function(card) {
+                card.classList.remove('template-active');
+            });
+            
+            event.target.closest('.template-card').classList.add('template-active');
+            
+            document.getElementById('role').value = template.role;
+            document.getElementById('audience').value = template.audience || '';
+            document.getElementById('mainQuery').value = template.mainQuery;
+            document.getElementById('context').value = template.context;
+            document.getElementById('stakes').value = template.stakes;
+            document.getElementById('outputType').value = template.outputType;
+            document.getElementById('researchNeeds').value = template.researchNeeds;
+            document.getElementById('verification').value = template.verification;
+            document.getElementById('aiModel').value = template.aiModel || 'claude';
+            
+            const workflowGroup = document.getElementById('modelWorkflowGroup');
+            if (template.aiModel === 'multimodel' && template.modelWorkflow) {
+                document.getElementById('modelWorkflow').value = template.modelWorkflow;
+                workflowGroup.style.display = 'block';
+            } else {
+                workflowGroup.style.display = 'none';
+            }
+            
+            // Apply smart defaults
+            setSmartDefaults(templateId);
+            
+            const analytics = getAnalytics();
+            analytics.templatesUsed = analytics.templatesUsed || {};
+            analytics.templatesUsed[templateId] = (analytics.templatesUsed[templateId] || 0) + 1;
+            localStorage.setItem('promptCrafterAnalytics', JSON.stringify(analytics));
+            
+            document.getElementById('promptForm').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function clearForm() {
+            document.getElementById('promptForm').reset();
+            document.getElementById('outputSection').style.display = 'none';
+            document.getElementById('customRoleGroup').style.display = 'none';
+            document.getElementById('customAudienceGroup').style.display = 'none';
+            document.getElementById('customStakesGroup').style.display = 'none';
+            document.getElementById('customOutputGroup').style.display = 'none';
+            document.getElementById('customResearchGroup').style.display = 'none';
+            document.getElementById('customVerificationGroup').style.display = 'none';
+            document.getElementById('modelWorkflowGroup').style.display = 'none';
+            
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            document.querySelectorAll('.template-card').forEach(function(card) {
+                card.classList.remove('template-active');
+            });
+        }
+        
+        function loadSharedPrompt() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shareData = urlParams.get('share');
+            
+            if (shareData) {
+                try {
+                    const decodedData = JSON.parse(atob(shareData));
+                    
+                    document.getElementById('role').value = decodedData.role || '';
+                    document.getElementById('audience').value = decodedData.audience || '';
+                    document.getElementById('mainQuery').value = decodedData.mainQuery || '';
+                    document.getElementById('context').value = decodedData.context || '';
+                    document.getElementById('stakes').value = decodedData.stakes || '';
+                    document.getElementById('outputType').value = decodedData.outputType || '';
+                    document.getElementById('researchNeeds').value = decodedData.researchNeeds || '';
+                    document.getElementById('verification').value = decodedData.verification || '';
+                    document.getElementById('aiModel').value = decodedData.aiModel || 'claude';
+                    document.getElementById('modelWorkflow').value = decodedData.modelWorkflow || '';
+                    
+                    document.getElementById('modelWorkflowGroup').style.display = 
+                        decodedData.aiModel === 'multimodel' ? 'block' : 'none';
+                    
+                    alert('Shared prompt loaded successfully!');
+                    
+                } catch (e) {
+                    console.error('Error loading shared prompt:', e);
+                }
+            }
+        }
+        
+        function showAbout() {
+            alert('Quill (Beta) - Evidence-Based Prompt Optimization v1.2\n\n' +
+                'What It Is:\n' +
+                'A research-driven tool that optimizes AI prompts using validated academic and industry best practices. Built by Dradis Holdings LLC.\n\n' +
+                'How It Works:\n' +
+                '1. Select from research-optimized templates\n' +
+                '2. Fill in details using our evidence-based form structure\n' +
+                '3. Generate prompts optimized with proven techniques\n' +
+                '4. Get better AI results through data-driven optimization\n' +
+                '5. Save and sync prompts across devices with cloud storage\n\n' +
+                'Current Features:\n' +
+                '- 12+ evidence-based prompt templates\n' +
+                '- Research-backed formatting (automatic delimiters)\n' +
+                '- Role and audience separation for clarity\n' +
+                '- Smart defaults based on template selection\n' +
+                '- Multi-model workflow planning capabilities (experimental)\n' +
+                '- GDPR-compliant cloud sync and data management\n' +
+                '- Cross-device access with Google authentication\n\n' +
+                'Beta Research Program:\n' +
+                'This beta version implements validated prompt engineering principles from academic research and industry studies. Our optimization approach is based on evidence rather than assumptions.\n\n' +
+                'v1.2 Updates:\n' +
+                '- Improved audience guidance with specific behavioral instructions\n' +
+                '- Streamlined research and verification options for clarity\n' +
+                '- Smart template defaults that adapt to your task type\n' +
+                '- Reduced prompt bloat by making sections conditional\n' +
+                '- Enhanced template examples with concrete use cases\n\n' +
+                '© 2025 Dradis Holdings LLC');
+        }
+        
+        const templates = {
+            'product-research': {
+                role: 'research assistant',
+                aiModel: 'claude',
+                mainQuery: 'Help me research and compare options for [specific product category] that fit my needs and budget.',
+                context: 'I\'m looking for products in a specific category and need help finding the best options.\n\n• Budget: $500-1000 (adjust to your range)\n• Must-have features: [e.g., wireless, waterproof, 2-year warranty]\n• Nice-to-have features: [e.g., specific color, brand preference]\n• Use case: [e.g., daily commute, professional work, outdoor activities]\n• Timeline: Need to purchase within 2 weeks',
+                stakes: 'high',
+                outputType: 'comparison',
+                researchNeeds: 'products',
+                verification: 'sources'
+            },
+            'business-analysis': {
+                role: 'consultant',
+                aiModel: 'claude',
+                mainQuery: 'Provide strategic analysis and recommendations for [specific business challenge or opportunity].',
+                context: 'I need strategic business insights for decision-making.\n\n• Company/industry: [e.g., B2B SaaS, 50 employees, $5M ARR]\n• Current situation: [e.g., declining customer retention, new competitor]\n• Goals: [e.g., increase retention by 15%, launch new feature]\n• Constraints: $50K budget, 3-month timeline, limited engineering resources\n• Stakeholders: CEO, product team, key customers',
+                stakes: 'high',
+                outputType: 'analysis',
+                researchNeeds: 'comprehensive',
+                verification: 'sources'
+            },
+            'technical-help': {
+                role: 'technical advisor',
+                aiModel: 'claude',
+                mainQuery: 'Help me solve [specific technical problem] with practical, implementable solutions.',
+                context: 'I need technical assistance with a specific implementation.\n\n• Tech stack: React 18, Node.js, PostgreSQL, deployed on AWS\n• Current setup: [e.g., monolithic architecture, REST API]\n• Problem: [e.g., slow query performance on user dashboard, 3+ second load times]\n• Constraints: Can\'t change database, must maintain backward compatibility\n• Experience level: 3 years JavaScript, comfortable with backend basics',
+                stakes: 'medium',
+                outputType: 'stepbystep',
+                researchNeeds: 'current',
+                verification: 'standard'
+            },
+            'content-creation': {
+                role: 'writing partner',
+                aiModel: 'claude',
+                mainQuery: 'Help me create [type of content] that effectively communicates [key message] to [target audience].',
+                context: 'I need help creating content for a specific purpose.\n\n• Content type: Blog post, 1200-1500 words\n• Audience: Mid-level marketing managers at B2B companies\n• Tone/style: Professional but approachable, data-driven, actionable\n• Key messages: [e.g., "Email segmentation increases ROI by 40%"]\n• Constraints: Must include 2-3 case studies, SEO keyword "email marketing automation"',
+                stakes: 'medium',
+                outputType: 'recommendations',
+                researchNeeds: 'trends',
+                verification: 'standard'
+            },
+            'learning-research': {
+                role: 'tutor',
+                aiModel: 'claude',
+                mainQuery: 'Create a learning plan and explain [topic] in a way that builds on my current knowledge.',
+                context: 'I\'m learning about a new topic and need structured guidance.\n\n• Current knowledge: Understand basic HTML/CSS, built 2-3 static websites\n• Learning goals: Build interactive web apps with user authentication\n• Learning style: Hands-on projects, visual examples, step-by-step progression\n• Timeline: 3 months, can dedicate 10 hours/week\n• Application: Want to build a portfolio project to show employers',
+                stakes: 'low',
+                outputType: 'stepbystep',
+                researchNeeds: 'comprehensive',
+                verification: 'sources'
+            },
+            'decision-making': {
+                role: 'consultant',
+                aiModel: 'claude',
+                mainQuery: 'Help me evaluate my options and make an informed decision about [specific decision].',
+                context: 'I need to make an important decision and want objective analysis.\n\n• Decision: Choose between job offer A (startup) vs offer B (enterprise)\n• Options: Startup: $95K + equity, 50 people, fast growth | Enterprise: $110K, 5000 people, stable\n• Criteria: Career growth (high priority), work-life balance (medium), financial stability (high)\n• Timeline: Need to decide within 1 week\n• Impact: Will affect next 2-3 years of career trajectory, possibly relocation',
+                stakes: 'high',
+                outputType: 'comparison',
+                researchNeeds: 'verify',
+                verification: 'confidence'
+            },
+            'creative-projects': {
+                role: 'writing partner',
+                aiModel: 'claude',
+                mainQuery: 'Help me develop creative concepts and content for [specific creative project].',
+                context: 'I need creative assistance for an artistic or imaginative project.\n\n• Project type: Short story for literary magazine submission\n• Style/genre: Contemporary fiction, character-driven, subtle humor\n• Audience: Adult readers, literary fiction fans\n• Constraints: 3000-5000 words, no explicit content per submission guidelines\n• Inspiration: Authors like George Saunders, Karen Russell - surreal but grounded',
+                stakes: 'medium',
+                outputType: 'recommendations',
+                researchNeeds: 'trends',
+                verification: 'standard'
+            },
+            'data-analysis': {
+                role: 'analyst',
+                aiModel: 'claude',
+                mainQuery: 'Analyze my data and provide actionable insights about [specific analytical question].',
+                context: 'I need help analyzing data to extract meaningful insights.\n\n• Data type: Customer survey responses, 500 respondents, mix of quantitative + qualitative\n• Data size: 25 questions, multiple choice + open-ended, 3 months of data\n• Key questions: Why is NPS declining? What features do churned customers mention?\n• Visualization needs: Executive dashboard showing trends, segmentation by customer tier\n• Audience: C-suite + product team will review findings',
+                stakes: 'high',
+                outputType: 'analysis',
+                researchNeeds: 'verify',
+                verification: 'confidence'
+            },
+            'workflow-automation': {
+                role: 'technical advisor',
+                aiModel: 'claude',
+                mainQuery: 'Design an automation strategy for [specific process or workflow].',
+                context: 'I want to automate or optimize a business process.\n\n• Current process: Manual invoice processing - receive PDF, data entry to spreadsheet, send to accounting\n• Pain points: Takes 2 hours daily, frequent data entry errors, invoices get lost in email\n• Tools available: Gmail, Google Sheets, Zapier (paid plan), QuickBooks\n• Constraints: $100/month budget for tools, must maintain audit trail for compliance\n• Success metrics: Reduce processing time by 70%, eliminate data entry errors',
+                stakes: 'medium',
+                outputType: 'stepbystep',
+                researchNeeds: 'current',
+                verification: 'sources'
+            },
+            'visual-content': {
+                role: 'consultant',
+                aiModel: 'multimodel',
+                mainQuery: 'Create a comprehensive visual content strategy and generate images for [specific visual project].',
+                context: 'I need to create visual content that combines research, planning, and image generation.\n\n• Visual goal: Social media campaign for product launch, need 5-7 hero images\n• Brand/style: Modern, minimalist, tech-forward - blues and whites, clean sans-serif fonts\n• Use case: Instagram/LinkedIn posts, email header, website banner\n• Technical specs: Instagram 1080x1080px, LinkedIn 1200x627px, web banner 1920x600px\n• Content requirements: Must include product mockup, brand logo, tagline "Innovation Simplified"',
+                stakes: 'medium',
+                outputType: 'stepbystep',
+                researchNeeds: 'trends',
+                verification: 'standard',
+                modelWorkflow: '• Claude: Research visual trends, plan composition and messaging\n• DALL-E/Midjourney: Generate initial visual concepts\n• Claude: Refine and iterate based on results\n• Specialized tools: Final editing and optimization'
+            },
+            'video-audio': {
+                role: 'consultant',
+                aiModel: 'multimodel',
+                mainQuery: 'Plan and coordinate the creation of [specific video/audio content].',
+                context: 'I need to create video or audio content with multiple AI tools.\n\n• Content type: Product explainer video for SaaS platform\n• Duration: 60-90 seconds for social media\n• Audience: Small business owners, non-technical\n• Style: Upbeat, professional, clear voiceover, animated text highlights\n• Distribution: LinkedIn, YouTube, embedded on landing page',
+                stakes: 'high',
+                outputType: 'stepbystep',
+                researchNeeds: 'current',
+                verification: 'sources',
+                modelWorkflow: '• Claude: Script writing, storyboard planning, research\n• DALL-E: Visual assets and thumbnails\n• RunwayML/Pika: Video generation\n• ElevenLabs: Voiceover generation\n• Claude: Quality review and optimization suggestions'
+            },
+            'code-generation': {
+                role: 'technical advisor',
+                aiModel: 'multimodel',
+                mainQuery: 'Design and implement [specific software project] using best practices and optimal architecture.',
+                context: 'I need advanced coding assistance that may require specialized models.\n\n• Project scope: User authentication system with OAuth, email verification, password reset\n• Technologies: Next.js 14, TypeScript, Prisma ORM, PostgreSQL, deployed on Vercel\n• Complexity: Need role-based access control (RBAC), audit logging, rate limiting\n• Performance needs: Handle 10K users, < 200ms API response time, secure token management\n• Deployment: Vercel for frontend, Supabase for database, need CI/CD pipeline',
+                stakes: 'high',
+                outputType: 'stepbystep',
+                researchNeeds: 'current',
+                verification: 'confidence',
+                modelWorkflow: '• Claude: Architecture planning, code review, documentation\n• Codex/Specialized models: Complex algorithm generation\n• Claude: Integration, testing, and optimization\n• Security models: Vulnerability analysis'
+            }
+        };
+    </script>
+</body>
+</html>
